@@ -1,0 +1,19 @@
+schema: spec-driven
+
+context: |
+  Proyecto: juego de sudoku web, creado para aprender SDD con OpenSpec.
+  Stack: TypeScript, Vite, sin backend ni base de datos.
+  Tests: Vitest para unitarios, Playwright para funcionales.
+  Arquitectura: la lógica del juego (tablero, validación, solver, generador)
+  va en src/core/, sin dependencias de la interfaz. La UI va en src/ui/.
+  Idioma: specs y documentación en español; código y nombres en inglés.
+
+rules:
+  proposal:
+    - Mantén el alcance pequeño; si el cambio crece, propón dividirlo.
+    - Indica explícitamente qué queda fuera del alcance.
+  specs:
+    - Cada requisito debe tener al menos un escenario WHEN/THEN verificable.
+    - Incluye escenarios de error y casos límite, no solo el caso feliz.
+  tasks:
+    - Incluye tareas de tests unitarios y funcionales.
