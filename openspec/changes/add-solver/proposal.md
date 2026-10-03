@@ -9,7 +9,7 @@ El juego ya puede representar un tablero y validar jugadas, pero no tiene forma 
 - Nueva función de resolución que, dado un tablero, intenta encontrar una solución completa a partir únicamente de las celdas fijas de su planteamiento original (ignora cualquier valor que el jugador haya escrito en celdas editables).
 - Clasificación del resultado en tres casos: sin solución, solución única (con la solución encontrada), o múltiples soluciones (con una de ellas).
 - La búsqueda de soluciones múltiples se detiene en cuanto se confirma una segunda solución distinta, sin enumerar todas las soluciones posibles.
-- Resolución en menos de 1 segundo para cualquier planteamiento, incluidos un sudoku de dificultad máxima conocida y un planteamiento sin solución.
+- Resolución en menos de 1 segundo para los planteamientos de referencia usados en la spec (un sudoku de dificultad máxima conocida y un planteamiento sin solución).
 - Solo lógica pura en `src/core/`, sin ningún componente de interfaz.
 
 ## Fuera de alcance
