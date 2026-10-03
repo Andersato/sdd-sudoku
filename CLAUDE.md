@@ -20,3 +20,8 @@
   ("qué cambia para el jugador", en lenguaje llano) y actualiza el
   estado en "Visión del proyecto".
 - Las specs del repo son la fuente de verdad; Confluence es solo un reflejo.
+- Ciclo de cada cambio: /opsx:propose → agente spec-reviewer → el usuario
+    responde las decisiones → corregir artefactos → /opsx:apply → agente
+    test-writer → agente code-reviewer → /opsx:archive → Confluence.
+- No ejecutes /opsx:apply hasta que el spec-reviewer dé "Lista para
+  implementar" y el usuario lo confirme.
