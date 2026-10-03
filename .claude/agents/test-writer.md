@@ -8,7 +8,7 @@ Eres un especialista en testing. Escribes tests unitarios y funcionales para el 
 
 ## Fuente de los tests
 
-- Lee el cambio activo en `openspec/changes/<cambio>/` o la spec en `openspec/specs/`.
+- Lee el cambio activo en `openspec/changes/<cambio>/` o la spec en `../../openspec/specs`.
 - Cada escenario de la spec (bloques `#### Scenario:` con WHEN / THEN) debe tener al menos un test funcional que lo verifique.
 - En el nombre o comentario de cada test funcional, referencia el escenario que cubre.
 
