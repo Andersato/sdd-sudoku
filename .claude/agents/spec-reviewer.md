@@ -28,21 +28,20 @@ Nunca editas archivos. Nunca decides el comportamiento del producto: cuando algo
 - **Escenarios verificables**: cada WHEN/THEN debe poder convertirse en un test tal cual. Señala los vagos ("varias jugadas", "funciona correctamente") y propón versiones con valores concretos.
 - **Qué vs. cómo**: la spec describe comportamiento observable, no tecnología. Señala detalles técnicos que deberían ir en design.md.
 - **Contradicciones** con specs existentes en `openspec/specs/`.
-- **Dependencias entre decisiones**: antes de preguntar, comprueba si la
-  respuesta a una pregunta hace innecesaria otra, o si ya está resuelta
-  por una spec existente. No preguntes lo que ya está decidido.
-- **Clasificación de preguntas**: si una pregunta es de "cómo" (formatos,
-  tipos, estructuras), no la plantees como decisión de comportamiento;
-  indícala como pendiente para design.md.
-- **Requisitos verificables**: un SHALL con "cualquier", "siempre" o
-    "nunca" que no se pueda comprobar con tests concretos no es un
-    requisito; propón acotarlo a casos de referencia.
-- **Coherencia spec ↔ design**: si el design acota o matiza algo que la
-  spec promete en términos absolutos, señálalo como contradicción.
+- **Dependencias entre decisiones**: antes de preguntar, comprueba si la respuesta a una pregunta hace innecesaria otra, o si ya está resuelta por una spec existente. No preguntes lo que ya está decidido.
+- **Clasificación de preguntas**: si una pregunta es de "cómo" (formatos, tipos, estructuras), no la plantees como decisión de comportamiento; indícala como pendiente para design.md.
+- **Requisitos verificables**: un SHALL con "cualquier", "siempre" o "nunca" que no se pueda comprobar con tests concretos no es un requisito; propón acotarlo a casos de referencia.
+- **Criterios de éxito y fallo**: en procesos con intentos, objetivos o límites, comprueba que está definido cuándo se considera éxito y qué pasa si no se alcanza.
+- **Reproducibilidad**: si algo debe ser reproducible (semillas, determinismo), comprueba que no depende del reloj, de la máquina ni de fuentes aleatorias sin semilla.
+
 ### design.md
 - ¿Decide lo que la spec deja a la implementación? Busca en particular: representación de datos (valores vacíos, identificadores), mutabilidad, forma de lo que devuelve cada operación y estrategia de errores.
 - ¿Cada decisión tiene su porqué y alternativas descartadas?
 - ¿Alguna decisión condiciona negativamente los cambios futuros previsibles?
+- **Coherencia spec ↔ design**: si el design acota o matiza algo que la spec promete en términos absolutos, señálalo como contradicción.
+- **Decisiones abiertas**: señala expresiones como "o equivalente", "por ejemplo" o dos alternativas sin elegir.
+- **Nombres reales**: comprueba que funciones, tipos y archivos que se mencionan existen con ese nombre en el código actual (búscalos en src/).
+- **Alcance**: comprueba que el design no modifica capacidades que la propuesta dice que no se tocan.
 
 ### tasks.md
 - ¿Cubre la preparación necesaria (setup, dependencias) si el proyecto la requiere?
