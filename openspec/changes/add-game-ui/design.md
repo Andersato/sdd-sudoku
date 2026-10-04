@@ -141,6 +141,16 @@ Un test Playwright localiza una celda con un selector como `[role="gridcell"][da
 ### Responsive a 360px con CSS Grid y unidades relativas, sin JavaScript
 El tablero se dimensiona con `aspect-ratio: 1` y un ancho basado en `min(92vw, 420px)` (o equivalente), con `CSS Grid` de 9x9 fracciones iguales; el panel de números usa `flex-wrap` para no desbordar. No hace falta JavaScript para el layout: es puro CSS, verificado con el test Playwright a 360px de ancho que ya pide la spec.
 
+### Separación de los cuadros de 3x3 con bordes más gruesos por atributo, sin clases nuevas
+Los límites entre cuadros de 3x3 se marcan con un borde más grueso que el de las celdas normales, usando los mismos atributos `data-row`/`data-col` que ya existen para los tests (sin introducir clases ni atributos nuevos): los selectores `[data-col="2"]`, `[data-col="5"]` añaden un `border-right` más grueso, y `[data-row="2"]`, `[data-row="5"]` un `border-bottom` más grueso, sobre el borde fino ya existente entre celdas. El borde exterior del tablero (`[role="grid"]`) ya es más grueso que el de las celdas, así que no hace falta ningún cambio ahí.
+
+Un test Playwright comprueba, con estilo computado (`getComputedStyle(cell).borderRightWidth`/`.borderBottomWidth`), que el borde en el límite de un cuadro es estrictamente mayor que el borde entre celdas del mismo cuadro, sin depender de ninguna clase CSS, igual que el resto de aserciones de estilo de este cambio (ver "Identificación de casillas para los tests").
+
+### El panel de números usa CSS Grid de 5 columnas en vez de flex-wrap, para evitar un botón suelto
+Con 10 botones (1-9 y "Borrar"), un `flex-wrap` simple puede dejar un número variable de botones en la última fila según el ancho disponible (por ejemplo, 8 en una fila y 2 sueltos en la siguiente). Se cambia a `display: grid` con `grid-template-columns: repeat(5, 1fr)`: con exactamente 10 botones, esto produce siempre dos filas completas de 5, sin ninguna fila con menos botones, sea cual sea el ancho dentro del rango soportado (360px-420px).
+
+Alternativa considerada: mantener `flex-wrap` y forzar el ancho de cada botón para que encajen exactamente N por fila. Se descarta porque depender de cálculos de ancho en píxeles es más frágil ante cambios de fuente o tamaño de botón que fijar el número de columnas directamente con `grid-template-columns`.
+
 ## Risks / Trade-offs
 
 - [Riesgo] `generatePuzzle` sigue siendo síncrona y bloquea el hilo principal durante la generación real (hasta ~2s en el peor caso), incluso con el doble `requestAnimationFrame` previo → Mitigación: la espera a dos frames solo garantiza que "Generando..." ya se pintó *antes* de bloquear, no que la página siga respondiendo *durante* el bloqueo; se acepta como no-goal (ver Non-Goals) porque un Web Worker añade complejidad fuera de alcance, y el presupuesto de rendimiento del generador (<2s en las semillas de referencia) ya limita cuánto puede durar.

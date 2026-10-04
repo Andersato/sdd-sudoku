@@ -41,3 +41,13 @@ Agrupa los hallazgos por gravedad:
 
 Para cada hallazgo indica archivo y línea, qué pasa y cómo lo arreglarías (en texto, sin aplicarlo).
 Termina con un veredicto de una línea: "Listo para archivar" o "Necesita cambios".
+
+- Limítate a los archivos que ha creado o modificado el cambio (usa
+  git status y git diff). No revises configuración general del proyecto
+  ni módulos que el cambio no toca.
+- Si el apply acaba de ejecutar los tests y han pasado, no repitas las
+  suites completas; ejecuta como mucho la comprobación de tipos y los
+  tests de los archivos que vayas a comentar.
+- Si el cambio es muy grande, revisa primero lo más crítico (lógica,
+  estado, manejo de errores) y menciona en el informe qué no has
+  revisado en profundidad.

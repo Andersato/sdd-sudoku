@@ -54,6 +54,17 @@ El sistema SHALL mostrar el tablero de 9x9 del planteamiento generado de forma q
 - **WHEN** se muestra la pantalla de juego con un planteamiento generado
 - **THEN** cada celda fija del planteamiento se muestra con una apariencia distinta a la de las celdas editables
 
+### Requirement: Separación visual de los cuadros de 3x3
+El sistema SHALL mostrar el tablero de forma que la separación entre dos cuadros de 3x3 adyacentes sea visualmente más marcada que la separación entre dos celdas dentro del mismo cuadro.
+
+#### Scenario: Separación vertical entre cuadros más marcada que dentro de un cuadro
+- **WHEN** se muestra el tablero
+- **THEN** el borde entre dos celdas de columnas pertenecientes a cuadros de 3x3 distintos es más grueso que el borde entre dos celdas de columnas del mismo cuadro
+
+#### Scenario: Separación horizontal entre cuadros más marcada que dentro de un cuadro
+- **WHEN** se muestra el tablero
+- **THEN** el borde entre dos celdas de filas pertenecientes a cuadros de 3x3 distintos es más grueso que el borde entre dos celdas de filas del mismo cuadro
+
 ### Requirement: Selección de celda por clic
 El sistema SHALL permitir seleccionar, haciendo clic, cualquier celda del tablero (fija o editable), resaltándola como seleccionada; solo puede haber una celda seleccionada a la vez.
 
@@ -166,3 +177,10 @@ El sistema SHALL mostrar el tablero y el panel de números de forma que puedan u
 #### Scenario: Sin desplazamiento horizontal a 360 píxeles de ancho
 - **WHEN** la pantalla de juego se muestra en una ventana de 360 píxeles de ancho
 - **THEN** el tablero y el panel de números son completamente visibles y usables sin que la página necesite desplazamiento horizontal
+
+### Requirement: Disposición ordenada del panel de números
+El sistema SHALL mostrar los botones del panel de números (del 1 al 9, y el de borrar) distribuidos en filas completas, sin dejar ningún botón suelto en una fila con menos botones que las demás mientras el ancho disponible permita colocarlos todos en el mismo número de filas completas.
+
+#### Scenario: El panel de números no deja botones sueltos
+- **WHEN** se muestra el panel de números en la pantalla de juego
+- **THEN** los diez botones (1-9 y borrar) se distribuyen en filas completas del mismo tamaño, sin ninguna fila con menos botones que las demás
