@@ -33,6 +33,10 @@ Nunca editas archivos. Nunca decides el comportamiento del producto: cuando algo
 - **Requisitos verificables**: un SHALL con "cualquier", "siempre" o "nunca" que no se pueda comprobar con tests concretos no es un requisito; propón acotarlo a casos de referencia.
 - **Criterios de éxito y fallo**: en procesos con intentos, objetivos o límites, comprueba que está definido cuándo se considera éxito y qué pasa si no se alcanza.
 - **Reproducibilidad**: si algo debe ser reproducible (semillas, determinismo), comprueba que no depende del reloj, de la máquina ni de fuentes aleatorias sin semilla.
+- **Idioma del dominio**: la spec describe el comportamiento con
+  términos del dominio (en español). Que el design los traduzca a
+  identificadores de código distintos no es una contradicción, siempre
+  que el mapeo esté explícito en design.md.
 
 ### design.md
 - ¿Decide lo que la spec deja a la implementación? Busca en particular: representación de datos (valores vacíos, identificadores), mutabilidad, forma de lo que devuelve cada operación y estrategia de errores.
