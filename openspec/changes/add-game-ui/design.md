@@ -31,12 +31,14 @@ Alternativa considerada: introducir una librería de UI (React, Preact, lit-html
 - `{ screen: "start"; status: "idle" }`
 - `{ screen: "start"; status: "generating"; difficulty }`
 - `{ screen: "start"; status: "error"; difficulty; message }`
-- `{ screen: "game"; board; puzzleDifficulty; selected: Coord | null }`
+- `{ screen: "game"; board: Board; puzzleDifficulty: Difficulty; selected: Coord | null }`
+
+`board` es siempre un `Board` (de `src/core/board/types.ts`, el mismo tipo que usan `place`/`clear`), nunca el array crudo que devuelve el generador.
 
 Las transiciones relevantes:
 - `idle`/`error` + elegir dificultad → `generating`
 - `generating` + elegir cualquier dificultad (incluida la misma) → sin efecto (se ignora mientras `status === "generating"`)
-- `generating` + generación con éxito → `screen: "game"`
+- `generating` + generación con éxito (planteamiento crudo `(number | null)[][]`) → se convierte con `createBoardFromPuzzle(puzzle)` (de `src/core/board/create.ts`) para obtener el `Board` con cada celda marcada `fixed`, y solo entonces se entra en `screen: "game"` con ese `Board`. Esta conversión ocurre en el mismo punto donde se recibe el resultado de `generatePuzzleAsync` (no dentro de `generatePuzzleAsync` ni del generador), para mantener `src/core/generator/` ajeno a `src/core/board/`.
 - `generating` + generación con error → `error` (con mensaje y la dificultad que falló, para el reintento)
 - `error` + "reintentar" → `generating` con la misma dificultad; `error` + elegir otra dificultad → `generating` con la nueva
 - `game` + "Nueva partida" sin números del jugador en el tablero → `idle` directamente
@@ -61,8 +63,10 @@ Así no hace falta ningún paso de traducción antes de llamar a `generatePuzzle
 Para que el aviso "Generando..." llegue a pintarse antes de que la llamada síncrona y potencialmente lenta a `generatePuzzle` bloquee el hilo, la UI nunca llama a `generatePuzzle` directamente desde el manejador de clic. En su lugar usa una función inyectada con esta forma:
 
 ```ts
-type GeneratePuzzleAsync = (options: GeneratorOptions) => Promise<Puzzle>;
+type GeneratePuzzleAsync = (options: GeneratorOptions) => Promise<(number | null)[][]>;
 ```
+
+(`(number | null)[][]` es el tipo real que devuelve `generatePuzzle`; no existe ningún tipo `Puzzle` en `src/core/`. La conversión a `Board` — con la marca `fixed` por celda — ocurre después, con `createBoardFromPuzzle`, como se describe en la decisión anterior.)
 
 La implementación por defecto (`src/ui/generatePuzzleAsync.ts`) envuelve la función real y espera a que el navegador haya tenido oportunidad de pintar el aviso "Generando..." antes de ejecutar la llamada bloqueante:
 
@@ -75,7 +79,7 @@ function waitForNextPaint(): Promise<void> {
   });
 }
 
-async function defaultGeneratePuzzleAsync(options: GeneratorOptions): Promise<Puzzle> {
+async function defaultGeneratePuzzleAsync(options: GeneratorOptions): Promise<(number | null)[][]> {
   await waitForNextPaint();
   return generatePuzzle(options);
 }
@@ -103,11 +107,26 @@ Una única capa delgada en `src/ui/boardView.ts` traduce eventos DOM (`keydown`,
 
 Alternativa considerada: resolver la navegación y la confirmación directamente dentro de los manejadores de eventos DOM. Se descarta porque mezclar la lógica con el DOM obliga a testear todo con Playwright (más lento, menos preciso para casos límite como "flecha en el borde") en vez de con Vitest.
 
+### El contenedor del tablero recibe el foco del teclado al entrar en la pantalla de juego
+El contenedor del tablero (el elemento con `role="grid"`) lleva `tabindex="0"` y recibe `.focus()` justo después de montarse al entrar en `screen: "game"`. El manejador de `keydown` (flechas, 1-9, Backspace, Delete) se adjunta a ese contenedor, no a `document` ni a cada celda por separado. Así:
+- El jugador puede navegar con las flechas y escribir con el teclado físico nada más empezar la partida, sin necesidad de hacer clic antes en ninguna celda (necesario para el escenario de la spec "sin ninguna celda seleccionada, una flecha selecciona la esquina superior izquierda").
+- En Playwright, `page.keyboard.press(...)` despacha al elemento con foco; los tests que teclean sin clic previo dependen de que ese `.focus()` automático haya ocurrido al montar la pantalla de juego.
+
+El manejador llama a `event.preventDefault()` para las cuatro flechas (evita que la página haga scroll) y para Backspace/Delete (evita que el navegador interprete Backspace como "atrás" cuando el foco no está en un campo de texto). No se llama a `preventDefault()` para ninguna otra tecla, de modo que el resto del comportamiento nativo del navegador (recarga, atajos, etc.) no se ve afectado.
+
+Alternativa considerada: adjuntar el listener a `document` y comprobar en cada pulsación si la pantalla activa es `game`. Se descarta porque mezclaría la gestión del foco entre pantallas y complicaría quitar el listener al volver a `idle`; un listener propio del contenedor del tablero se añade y se quita junto con su ciclo de vida.
+
 ### Entrada dual (teclado y panel) comparte un único manejador
 Tanto las teclas numéricas/Backspace/Delete como los botones del panel de números llaman a las mismas dos funciones (`handleDigit(value)` y `handleErase()`), que a su vez comprueban "¿hay celda seleccionada? ¿es editable?" antes de llamar a `place`/`clear`; si no se cumplen las condiciones, no hacen nada (sin mostrar error), igual que una tecla no reconocida simplemente no se despacha a ningún manejador.
 
 ### Confirmación de "Nueva partida" con `window.confirm()` nativo
-Se usa el diálogo nativo del navegador (`window.confirm(mensaje)`) en vez de construir un modal propio. Es síncrono, no requiere maquetación ni estilos, y Playwright puede interceptarlo y responder (aceptar/cancelar) de forma determinista con `page.on("dialog", ...)`.
+Al pulsar "Nueva partida", la capa de DOM llama a `shouldConfirmNewGame(board)` (función pura, ver más abajo): si devuelve `false`, se despacha la transición a `idle` directamente; si devuelve `true`, se llama de forma síncrona a `window.confirm(mensaje)` con el texto fijo:
+
+> "Hay una partida en curso. Si empiezas una nueva, perderás lo que has escrito. ¿Quieres continuar?"
+
+Si el jugador acepta, se despacha la transición a `idle`; si cancela, no se despacha nada y el estado no cambia. No existe una función pura `requestNewGame` ni un estado intermedio "pendiente de confirmación" en `AppState`: la decisión de mostrar o no el diálogo, y la llamada al diálogo en sí, viven enteramente en la capa de DOM del botón "Nueva partida" (`src/ui/boardView.ts` o un módulo equivalente), apoyándose solo en `shouldConfirmNewGame` y en la transición `confirmNewGame`/`idle` ya existente.
+
+Se usa el diálogo nativo del navegador en vez de construir un modal propio porque es síncrono, no requiere maquetación ni estilos, y Playwright puede interceptarlo y responder (aceptar/cancelar) de forma determinista con `page.on("dialog", ...)`.
 
 Alternativa considerada: un modal propio en HTML/CSS. Se descarta por ahora para mantener el alcance pequeño; si en el futuro se quiere una confirmación con estilo propio, es un cambio de UI aislado.
 
