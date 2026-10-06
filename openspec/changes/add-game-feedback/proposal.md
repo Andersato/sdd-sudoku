@@ -36,7 +36,7 @@ Ahora mismo el jugador puede rellenar el tablero, pero el juego no le dice nada:
 ## Impact
 
 - Código del core (`src/core/board/`): nueva consulta de tablero completado, apoyada en la consulta de conflictos que ya existe (`getConflicts`).
-- Código de la UI (`src/ui/`): `boardView.ts` (marcas de error, temporizador, mensaje de éxito, bloqueo de entrada), `state.ts` (estado de la partida: completada y tiempo), `styles.css` (estilos de error, éxito y temporizador), `navigation.ts` (confirmación de nueva partida).
+- Código de la UI (`src/ui/`): `boardView.ts` (marcas de error, dibujo del temporizador y del mensaje de éxito, bloqueo de entrada), nuevo `timer.ts` (cuenta y formato del tiempo), `app.ts` (vida del temporizador: arranque, pausa, parada), `styles.css` (estilos de error, éxito y temporizador) y `navigation.ts` (confirmación de nueva partida). `state.ts` no cambia: la partida completada se deduce del tablero y el tiempo vive fuera del estado.
 - El temporizador necesita un reloj y un aviso de visibilidad de la página inyectables para poder probarlo sin esperar tiempo real.
 - Riesgo: añadir el temporizador y el mensaje encima o debajo del tablero puede romper la regla de 360x640 sin desplazamiento vertical; se resolverá en el diseño.
 - Tests: unitarios de la consulta de completado y del formato del tiempo; funcionales de marcas de error, partida completada, bloqueo, temporizador (con reloj simulado) y contraste. Los tests existentes de visual-style que comprueban que los colores reservados no se usan deben adaptarse a la nueva regla, y hay que revisar los tests e2e existentes que escriben números por si alguno crea un conflicto sin querer.
