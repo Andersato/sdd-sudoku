@@ -25,7 +25,9 @@ Juego de sudoku web creado para aprender Spec-Driven Development con OpenSpec.
 - Si algo de la spec es ambiguo, pregunta en vez de suponer.
 - Si un test falla con un ejemplo de la spec, no modifiques el test:
   averigua si el error está en el código o en la spec y pregúntame.
-
+- Después de generar design.md y tasks.md, detente y espera a que el
+  usuario confirme antes de implementar. Solo /opsx:apply inicia la
+  implementación.
 
 ## Normas
 - No hagas commits ni push; los hago yo.

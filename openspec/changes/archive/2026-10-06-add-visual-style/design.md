@@ -145,12 +145,14 @@ Alternativa descartada: añadir una dependencia de accesibilidad (axe-core o sim
 - `font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`. No hay `@font-face` ni enlaces a fuentes externas. Los números del tablero llevan `font-variant-numeric: tabular-nums`.
 - Pesos: celdas fijas 700 y celdas editables 400, también con la celda seleccionada.
 - El título y el aviso "Generando..." se pintan con `--color-text` sobre `--color-bg`. El mensaje de error va en un recuadro con fondo `--color-surface`, borde `--color-border`, texto `--color-text` y `overflow-wrap: anywhere`, para que un mensaje largo, aunque no tenga espacios, se reparta en varias líneas. No usa el color de error.
+- El título (`h1`) mide `2rem`, con peso 700, `letter-spacing: 0.01em` y margen `1rem 0 1.5rem`. El aviso "Generando..." (`[role="status"]`) lleva un margen vertical de `1rem`.
 
 ### D11. Maquetación a 360x640 y `meta viewport`
 
 - Se añade `<meta name="viewport" content="width=device-width, initial-scale=1">` a `index.html`.
 - `[data-screen]` pasa a tener `padding: 1rem`, `max-width: 460px` y `margin: 0 auto`. El tablero y el panel usan `width: min(100%, 420px)` en lugar de `92vw`, así que a 360 px miden 328 px y nunca desbordan su contenedor.
 - El panel de números mantiene sus 5 columnas: dos filas de 44 px más el hueco. La suma de relleno, tablero (328), márgenes y panel (unos 96) da unos 470 px, que caben en 640 sin desplazamiento vertical. "Nueva partida" va debajo y puede quedar justo en el límite, lo que la spec permite.
+- La pantalla inicial (`[data-screen="start"]`) centra su contenido con `text-align: center`. En la pantalla de juego, "Nueva partida" (`[data-screen="game"] > button`) se centra bajo el panel con `display: block` y `margin: 0 auto`.
 - Los tests de 360x640 usan `test.use({ viewport: { width: 360, height: 640 }, isMobile: true, hasTouch: true })`. Además comprueban `window.innerWidth === 360`: sin `meta viewport` y con `isMobile`, el navegador maqueta a 980 px, y la comprobación de desplazamiento horizontal pasaría aunque el diseño estuviera mal. Esa comprobación de `innerWidth` es la que detecta que falta la etiqueta.
 - Lo que la spec pide "completamente visible" se comprueba con `toBeInViewport({ ratio: 1 })`. Sin la opción, Playwright da por buena una visibilidad parcial.
 
