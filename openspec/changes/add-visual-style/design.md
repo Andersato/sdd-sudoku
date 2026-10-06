@@ -118,7 +118,7 @@ Lo usan:
 
 Se pone en `src/ui/` porque es la única carpeta que recoge Vitest. Además, si `e2e/` tuviera un `*.test.ts`, Playwright lo ejecutaría como test funcional. La aplicación no lo importa, así que el empaquetado lo descarta.
 
-Para que `tsc` acepte el `?raw`, se añade `src/vite-env.d.ts` con `/// <reference types="vite/client" />`. Vite ya está instalado, así que no hay dependencias nuevas, y Vitest entiende `?raw` igual que Vite.
+Para que `tsc` acepte el `?raw`, se añade `src/vite-env.d.ts` con `/// <reference types="vite/client" />`. Vite ya está instalado, así que no hay dependencias nuevas, y Vitest entiende `?raw` igual que Vite. Por defecto Vitest sustituye los CSS por una cadena vacía, también con `?raw`, así que `vitest.config.ts` añade `css: { include: [/styles\.css/] }`.
 
 Alternativa descartada: leer el archivo con `node:fs`. `tsconfig.json` incluye todo `src`, también los tests, y `npm run build` ejecuta `tsc --noEmit`. Sin `@types/node`, que no está instalado, la compilación fallaría, y añadirlo sería una dependencia nueva.
 
