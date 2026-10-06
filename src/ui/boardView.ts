@@ -101,6 +101,7 @@ export function renderGameScreen(
 
   const newGameButton = document.createElement("button");
   newGameButton.textContent = "Nueva partida";
+  newGameButton.setAttribute("data-variant", "secondary");
   newGameButton.addEventListener("click", () => {
     if (shouldConfirmNewGame(state.board) && !window.confirm(CONFIRM_NEW_GAME_MESSAGE)) {
       return;

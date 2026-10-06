@@ -68,6 +68,7 @@ export function renderStartScreen(
     const button = document.createElement("button");
     button.textContent = DIFFICULTY_LABELS[difficulty];
     button.setAttribute("data-difficulty", difficulty);
+    button.setAttribute("data-variant", "primary");
     button.disabled = state.status === "generating";
     button.addEventListener("click", () => handleChoose(state, difficulty, ctx));
     difficultyList.appendChild(button);
@@ -89,6 +90,7 @@ export function renderStartScreen(
 
     const retryButton = document.createElement("button");
     retryButton.textContent = "Reintentar";
+    retryButton.setAttribute("data-variant", "primary");
     retryButton.addEventListener("click", () => handleRetry(state, ctx));
     screen.appendChild(retryButton);
   }

@@ -11,6 +11,7 @@ export function renderNumberPanel(container: HTMLElement, ctx: NumberPanelContex
     const button = document.createElement("button");
     button.textContent = String(value);
     button.setAttribute("data-digit", String(value));
+    button.setAttribute("data-variant", "primary");
     button.addEventListener("click", () => ctx.onDigit(value));
     panel.appendChild(button);
   }
@@ -18,6 +19,7 @@ export function renderNumberPanel(container: HTMLElement, ctx: NumberPanelContex
   const eraseButton = document.createElement("button");
   eraseButton.textContent = "Borrar";
   eraseButton.setAttribute("data-action", "erase");
+  eraseButton.setAttribute("data-variant", "secondary");
   eraseButton.addEventListener("click", () => ctx.onErase());
   panel.appendChild(eraseButton);
 
