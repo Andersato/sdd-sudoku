@@ -85,6 +85,12 @@ describe("paleta de styles.css", () => {
     expect(sameRgb(success, color("accent"))).toBe(false);
   });
 
+  it("el color de error es legible sobre las celdas, también sobre la seleccionada", () => {
+    const error = color("error");
+    expect(contrastRatio(error, color("surface"))).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(error, color("surface-selected"))).toBeGreaterThanOrEqual(4.5);
+  });
+
   it("no declara fuentes propias", () => {
     expect(css).not.toMatch(/@font-face/i);
   });

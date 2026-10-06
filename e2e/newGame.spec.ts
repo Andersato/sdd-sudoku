@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { gotoGameScreen } from "./helpers";
+import { almostSolvedPuzzle, gotoGameScreen } from "./helpers";
 
 const KNOWN_PUZZLE: (number | null)[][] = [
   [5, null, null, null, null, null, null, null, null],
@@ -63,6 +63,22 @@ test("escribir y borrar un número no pide confirmación", async ({ page }) => {
   let dialogShown = false;
   page.on("dialog", () => {
     dialogShown = true;
+  });
+  await page.click('button:has-text("Nueva partida")');
+  await expect(page.locator('[data-screen="start"]')).toBeVisible();
+  expect(dialogShown).toBe(false);
+});
+
+test("con la partida completada, Nueva partida vuelve directamente sin diálogo", async ({ page }) => {
+  await gotoGameScreen(page, almostSolvedPuzzle());
+  await page.locator('[data-row="0"][data-col="2"]').click();
+  await page.keyboard.press("4");
+  await expect(page.getByTestId("game-complete")).toBeVisible();
+
+  let dialogShown = false;
+  page.on("dialog", (dialog) => {
+    dialogShown = true;
+    void dialog.dismiss();
   });
   await page.click('button:has-text("Nueva partida")');
   await expect(page.locator('[data-screen="start"]')).toBeVisible();

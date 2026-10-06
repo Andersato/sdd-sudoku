@@ -108,7 +108,7 @@ El sistema SHALL permitir mover la celda seleccionada con las flechas del teclad
 - **THEN** la celda de la esquina superior izquierda del tablero (fila 0, columna 0) queda seleccionada
 
 ### Requirement: Escribir un número en la celda editable seleccionada
-El sistema SHALL, con una celda editable seleccionada, permitir escribir un número del 1 al 9 en esa celda tanto con el teclado físico como con un panel de números en pantalla, con el mismo resultado en ambos casos.
+El sistema SHALL, con una celda editable seleccionada y mientras la partida no esté completada, permitir escribir un número del 1 al 9 en esa celda tanto con el teclado físico como con un panel de números en pantalla, con el mismo resultado en ambos casos.
 
 #### Scenario: Escribir un número con el teclado físico
 - **WHEN** hay una celda editable seleccionada y el jugador pulsa una tecla numérica del 1 al 9
@@ -123,7 +123,7 @@ El sistema SHALL, con una celda editable seleccionada, permitir escribir un núm
 - **THEN** la celda pasa a mostrar el número nuevo en lugar del anterior
 
 ### Requirement: Borrar el valor de la celda editable seleccionada
-El sistema SHALL, con una celda editable seleccionada que tiene un número, permitir borrar ese número tanto con las teclas Backspace o Delete del teclado físico como con un botón de borrar en el panel de números, con el mismo resultado en ambos casos.
+El sistema SHALL, con una celda editable seleccionada que tiene un número y mientras la partida no esté completada, permitir borrar ese número tanto con las teclas Backspace o Delete del teclado físico como con un botón de borrar en el panel de números, con el mismo resultado en ambos casos.
 
 #### Scenario: Borrar con el teclado físico
 - **WHEN** hay una celda editable seleccionada con un número y el jugador pulsa Backspace o Delete
@@ -134,7 +134,7 @@ El sistema SHALL, con una celda editable seleccionada que tiene un número, perm
 - **THEN** esa celda queda vacía, igual que si se hubiera borrado con el teclado físico
 
 ### Requirement: Entradas sin efecto sobre el tablero
-El sistema SHALL ignorar, sin modificar el tablero ni mostrar ningún mensaje de error, cualquier intento de escribir o borrar un número cuando no sea aplicable: una tecla que no sea un número del 1-9 ni Backspace/Delete ni una flecha, un número o un borrado sin ninguna celda seleccionada, o un número o un borrado con una celda fija seleccionada.
+El sistema SHALL ignorar, sin modificar el tablero ni mostrar ningún mensaje de error, cualquier intento de escribir o borrar un número cuando no sea aplicable: una tecla que no sea un número del 1-9 ni Backspace/Delete ni una flecha, un número o un borrado sin ninguna celda seleccionada, un número o un borrado con una celda fija seleccionada, o un número o un borrado con la partida ya completada.
 
 #### Scenario: Tecla no válida no cambia nada
 - **WHEN** el jugador pulsa una tecla que no es un número del 1 al 9, ni Backspace, ni Delete, ni una flecha (por ejemplo, una letra o un símbolo)
@@ -156,8 +156,12 @@ El sistema SHALL ignorar, sin modificar el tablero ni mostrar ningún mensaje de
 - **WHEN** no hay ninguna celda seleccionada y el jugador pulsa Backspace, Delete o el botón de borrar del panel
 - **THEN** el tablero no cambia y no se muestra ningún mensaje de error
 
+#### Scenario: Escribir o borrar con la partida completada no cambia nada
+- **WHEN** la partida está completada, hay una celda editable seleccionada y el jugador escribe un número o borra, con el teclado físico o con el panel
+- **THEN** el tablero no cambia y no se muestra ningún mensaje de error
+
 ### Requirement: Empezar una nueva partida
-El sistema SHALL mostrar, durante la pantalla de juego, un control para empezar una nueva partida que vuelve a la pantalla inicial de selección de dificultad; SHALL pedir confirmación antes de abandonar la partida en curso si, en el momento de usar ese control, hay algún número puesto por el jugador en alguna celda editable del tablero, y SHALL volver directamente a la pantalla inicial sin pedir confirmación si no hay ninguno en ese momento (incluido el caso de haber escrito y borrado números antes, sin dejar ninguno puesto).
+El sistema SHALL mostrar, durante la pantalla de juego, un control para empezar una nueva partida que vuelve a la pantalla inicial de selección de dificultad; SHALL pedir confirmación antes de abandonar la partida en curso si, en el momento de usar ese control, la partida no está completada y hay algún número puesto por el jugador en alguna celda editable del tablero, y SHALL volver directamente a la pantalla inicial sin pedir confirmación en cualquier otro caso: si no hay ninguno en ese momento (incluido el caso de haber escrito y borrado números antes, sin dejar ninguno puesto) o si la partida está completada.
 
 #### Scenario: Nueva partida sin números puestos vuelve directamente
 - **WHEN** el jugador usa el control de nueva partida y, en ese momento, ninguna celda editable tiene un número puesto por el jugador
@@ -168,8 +172,12 @@ El sistema SHALL mostrar, durante la pantalla de juego, un control para empezar 
 - **THEN** el sistema vuelve a la pantalla inicial de selección de dificultad sin pedir confirmación
 
 #### Scenario: Nueva partida con algún número puesto pide confirmación
-- **WHEN** el jugador usa el control de nueva partida y, en ese momento, al menos una celda editable tiene un número puesto por el jugador
+- **WHEN** el jugador usa el control de nueva partida y, en ese momento, la partida no está completada y al menos una celda editable tiene un número puesto por el jugador
 - **THEN** el sistema pide confirmación antes de volver a la pantalla inicial
+
+#### Scenario: Nueva partida con la partida completada vuelve directamente
+- **WHEN** la partida está completada y el jugador usa el control de nueva partida
+- **THEN** el sistema vuelve a la pantalla inicial de selección de dificultad sin pedir confirmación
 
 #### Scenario: Confirmar el abandono vuelve a la pantalla inicial
 - **WHEN** el jugador confirma que quiere abandonar la partida en curso
@@ -180,11 +188,15 @@ El sistema SHALL mostrar, durante la pantalla de juego, un control para empezar 
 - **THEN** el sistema permanece en la pantalla de juego con el tablero y los números tal como estaban
 
 ### Requirement: Uso en pantallas de móvil sin desplazamiento horizontal
-El sistema SHALL poder usarse por completo en una pantalla de móvil de referencia de 360x640 píxeles sin desplazamiento horizontal: pantalla inicial, aviso de generación, pantalla de error y pantalla de juego. En la pantalla de juego, el tablero y el panel de números SHALL caber además sin desplazamiento vertical; "Nueva partida" puede requerirlo.
+El sistema SHALL poder usarse por completo en una pantalla de móvil de referencia de 360x640 píxeles sin desplazamiento horizontal: pantalla inicial, aviso de generación, pantalla de error y pantalla de juego. En la pantalla de juego, el temporizador, el tablero, el panel de números y, cuando se muestra, el mensaje de partida completada SHALL caber además sin desplazamiento vertical; "Nueva partida" puede requerirlo.
 
 #### Scenario: Sin desplazamiento horizontal a 360 píxeles de ancho
 - **WHEN** la pantalla de juego se muestra en una pantalla de móvil de 360x640 píxeles
-- **THEN** el tablero y el panel de números son completamente visibles y usables sin que la página necesite desplazamiento horizontal ni vertical
+- **THEN** el temporizador, el tablero y el panel de números son completamente visibles y usables sin que la página necesite desplazamiento horizontal ni vertical
+
+#### Scenario: Mensaje de partida completada a 360 píxeles de ancho
+- **WHEN** la partida está completada y la pantalla de juego se muestra en una pantalla de móvil de 360x640 píxeles
+- **THEN** el mensaje de partida completada, el temporizador, el tablero y el panel de números son completamente visibles sin que la página necesite desplazamiento horizontal ni vertical
 
 #### Scenario: Botón de nueva partida visible a 360 píxeles de ancho
 - **WHEN** la pantalla de juego se muestra en una pantalla de móvil de 360x640 píxeles

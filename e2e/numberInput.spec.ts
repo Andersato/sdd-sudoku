@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { gotoGameScreen } from "./helpers";
+import { almostSolvedPuzzle, gotoGameScreen } from "./helpers";
 
 const KNOWN_PUZZLE: (number | null)[][] = [
   [5, null, null, null, null, null, null, null, null],
@@ -62,4 +62,25 @@ test("borrar sin ninguna celda seleccionada no cambia nada", async ({ page }) =>
   await page.locator('[data-action="erase"]').click();
   await expect(page.locator('[data-row="0"][data-col="0"]')).toHaveText("5");
   await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+test("escribir o borrar con la partida completada no cambia nada", async ({ page }) => {
+  await gotoGameScreen(page, almostSolvedPuzzle());
+  const target = page.locator('[data-row="0"][data-col="2"]');
+  await target.click();
+  await page.keyboard.press("4");
+  await expect(page.getByTestId("game-complete")).toBeVisible();
+
+  let dialogShown = false;
+  page.on("dialog", () => {
+    dialogShown = true;
+  });
+  await page.keyboard.press("9");
+  await page.locator('[data-digit="9"]').click();
+  await page.keyboard.press("Backspace");
+  await page.keyboard.press("Delete");
+  await page.locator('[data-action="erase"]').click();
+  await expect(target).toHaveText("4");
+  await expect(page.locator('[role="alert"]')).toHaveCount(0);
+  expect(dialogShown).toBe(false);
 });

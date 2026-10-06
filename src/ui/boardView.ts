@@ -1,8 +1,11 @@
+import { getConflicts } from "../core/board/conflicts";
 import { clear, place } from "../core/board/mutate";
+import { isSolved } from "../core/board/solved";
 import { BOARD_SIZE, type Board, type Cell, type Coord } from "../core/board/types";
 import { nextSelection, shouldConfirmNewGame, type ArrowKey } from "./navigation";
 import { renderNumberPanel } from "./numberPanel";
 import { confirmNewGame, type AppState } from "./state";
+import { formatElapsed } from "./timer";
 
 const CONFIRM_NEW_GAME_MESSAGE =
   "Hay una partida en curso. Si empiezas una nueva, perderás lo que has escrito. ¿Quieres continuar?";
@@ -11,6 +14,7 @@ export type GameState = Extract<AppState, { screen: "game" }>;
 
 export interface GameScreenContext {
   readonly dispatch: (next: AppState) => void;
+  readonly elapsedMs: () => number;
 }
 
 const ARROW_KEYS: readonly ArrowKey[] = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
@@ -20,17 +24,31 @@ function isArrowKey(key: string): key is ArrowKey {
 }
 
 export function handleDigit(board: Board, selected: Coord | null, value: number): Board {
-  if (selected === null || board[selected.row][selected.col].fixed) {
+  if (selected === null || board[selected.row][selected.col].fixed || isSolved(board)) {
     return board;
   }
   return place(board, selected, value).board;
 }
 
 export function handleErase(board: Board, selected: Coord | null): Board {
-  if (selected === null || board[selected.row][selected.col].fixed) {
+  if (selected === null || board[selected.row][selected.col].fixed || isSolved(board)) {
     return board;
   }
   return clear(board, selected);
+}
+
+function renderCompletionMessage(elapsedMs: number): HTMLElement {
+  const message = document.createElement("div");
+  message.setAttribute("data-testid", "game-complete");
+  message.setAttribute("aria-live", "polite");
+
+  const title = document.createElement("p");
+  title.textContent = "¡Sudoku resuelto!";
+  const time = document.createElement("p");
+  time.textContent = `Tiempo: ${formatElapsed(elapsedMs)}`;
+
+  message.append(title, time);
+  return message;
 }
 
 export function renderGameScreen(
@@ -47,6 +65,8 @@ export function renderGameScreen(
   grid.setAttribute("role", "grid");
   grid.setAttribute("tabindex", "0");
 
+  const conflictKeys = new Set(getConflicts(state.board).map(({ row, col }) => `${row},${col}`));
+
   for (let row = 0; row < BOARD_SIZE; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
       const cell: Cell = state.board[row][col];
@@ -55,6 +75,9 @@ export function renderGameScreen(
       cellEl.setAttribute("data-row", String(row));
       cellEl.setAttribute("data-col", String(col));
       cellEl.setAttribute("data-fixed", String(cell.fixed));
+      if (conflictKeys.has(`${row},${col}`)) {
+        cellEl.setAttribute("data-conflict", "true");
+      }
       const isSelected = state.selected?.row === row && state.selected?.col === col;
       cellEl.setAttribute("aria-selected", String(isSelected));
       cellEl.textContent = cell.value === null ? "" : String(cell.value);
@@ -109,7 +132,15 @@ export function renderGameScreen(
     ctx.dispatch(confirmNewGame(state));
   });
 
+  const timer = document.createElement("div");
+  timer.setAttribute("data-testid", "timer");
+  timer.textContent = formatElapsed(ctx.elapsedMs());
+
+  screen.appendChild(timer);
   screen.appendChild(grid);
+  if (isSolved(state.board)) {
+    screen.appendChild(renderCompletionMessage(ctx.elapsedMs()));
+  }
   renderNumberPanel(screen, { onDigit: applyDigit, onErase: applyErase });
   screen.appendChild(newGameButton);
   container.appendChild(screen);

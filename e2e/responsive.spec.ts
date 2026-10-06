@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { gotoGameScreen, installPuzzleHook, rejectPending } from "./helpers";
+import { almostSolvedPuzzle, gotoGameScreen, installPuzzleHook, rejectPending } from "./helpers";
 
 const KNOWN_PUZZLE: (number | null)[][] = [
   [5, null, null, null, null, null, null, null, null],
@@ -34,9 +34,11 @@ async function goToErrorScreen(page: Page, message: string): Promise<void> {
   await expect(page.getByRole("alert")).toBeVisible();
 }
 
-test("a 360x640 el tablero y el panel caben sin desplazarse", async ({ page }) => {
+test("a 360x640 el temporizador, el tablero y el panel caben sin desplazarse", async ({ page }) => {
   await gotoGameScreen(page, KNOWN_PUZZLE);
   await expectMobileLayout(page);
+
+  await expect(page.getByTestId("timer")).toBeInViewport(FULLY);
 
   await expect(page.locator('[role="gridcell"]')).toHaveCount(81);
   await expect(page.getByRole("grid")).toBeInViewport(FULLY);
@@ -50,6 +52,33 @@ test("a 360x640 el tablero y el panel caben sin desplazarse", async ({ page }) =
   }
   await expect(page.locator('[data-action="erase"]')).toBeInViewport(FULLY);
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
+});
+
+test("a 360x640 con la partida completada caben el mensaje, el temporizador, el tablero y el panel", async ({
+  page,
+}) => {
+  await gotoGameScreen(page, almostSolvedPuzzle());
+  await page.locator('[data-row="0"][data-col="2"]').click();
+  await page.keyboard.press("4");
+  await expect(page.getByTestId("game-complete")).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expectMobileLayout(page);
+
+  await expect(page.getByTestId("game-complete")).toBeInViewport(FULLY);
+  await expect(page.getByTestId("timer")).toBeInViewport(FULLY);
+  await expect(page.getByRole("grid")).toBeInViewport(FULLY);
+  for (let digit = 1; digit <= 9; digit++) {
+    await expect(page.locator(`[data-digit="${digit}"]`)).toBeInViewport(FULLY);
+  }
+  await expect(page.locator('[data-action="erase"]')).toBeInViewport(FULLY);
+
+  // "Nueva partida" sigue siendo alcanzable, aunque haga falta desplazarse en vertical.
+  const newGame = page.getByRole("button", { name: "Nueva partida" });
+  await newGame.scrollIntoViewIfNeeded();
+  await expect(newGame).toBeInViewport(FULLY);
+  await expectMobileLayout(page);
+  await newGame.click();
+  await expect(page.locator('[data-screen="start"]')).toBeVisible();
 });
 
 test("a 360x640 el botón Nueva partida es visible y usable sin desplazamiento horizontal", async ({ page }) => {

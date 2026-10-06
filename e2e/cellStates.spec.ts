@@ -181,3 +181,61 @@ test("pasar el ratón por una celda no cambia su aspecto", async ({ page }) => {
   await target.hover();
   expect(await computed(target, props)).toEqual(before);
 });
+
+test.describe("visual-style: números en error", () => {
+  const isUnderlined = async (row: number, col: number, page: Page) =>
+    (await computed(cell(page, row, col), ["text-decoration-line"]))["text-decoration-line"].includes("underline");
+
+  async function colorOf(page: Page, row: number, col: number) {
+    return parseColor((await computed(cell(page, row, col), ["color"])).color);
+  }
+
+  test("número en error en el color de error (fijo y del jugador, seleccionado o no)", async ({ page }) => {
+    const error = await paletteRgba(page, "error");
+    // El 5 en (0,4) repite el 5 fijo de (0,0).
+    await writePlayerNumber(page, 0, 4, "5");
+
+    // Del jugador, seleccionada.
+    expect(sameRgb(await colorOf(page, 0, 4), error)).toBe(true);
+    // Fija, seleccionada.
+    await cell(page, 0, 0).click();
+    expect(sameRgb(await colorOf(page, 0, 0), error)).toBe(true);
+    // Las dos sin seleccionar.
+    await cell(page, 4, 4).click();
+    expect(sameRgb(await colorOf(page, 0, 0), error)).toBe(true);
+    expect(sameRgb(await colorOf(page, 0, 4), error)).toBe(true);
+  });
+
+  test("el número recupera su color al resolverse el conflicto", async ({ page }) => {
+    const accent = await paletteRgba(page, "accent");
+    await writePlayerNumber(page, 0, 4, "5");
+    await writePlayerNumber(page, 0, 4, "3");
+    await cell(page, 4, 4).click();
+
+    expect(sameRgb(await colorOf(page, 0, 4), accent)).toBe(true);
+    expect(sameRgb(await colorOf(page, 0, 0), parseColor("#ffffff"))).toBe(true);
+  });
+
+  test("una celda en error se distingue sin depender del color", async ({ page }) => {
+    // Fijas: 5 en (0,0) y 2 en (8,8). El jugador pone 5 en (0,4) (conflicto con (0,0))
+    // y 3 en (6,6), sin conflicto.
+    const puzzle: (number | null)[][] = Array.from({ length: 9 }, (_, row) =>
+      Array.from({ length: 9 }, (_, col) => {
+        if (row === 0 && col === 0) return 5;
+        if (row === 8 && col === 8) return 2;
+        return null;
+      }),
+    );
+    await gotoGameScreen(page, puzzle);
+    await writePlayerNumber(page, 0, 4, "5");
+    await writePlayerNumber(page, 6, 6, "3");
+    await cell(page, 4, 4).click();
+
+    // Jugador en error frente a jugador sin marcar.
+    expect(await isUnderlined(0, 4, page)).toBe(true);
+    expect(await isUnderlined(6, 6, page)).toBe(false);
+    // Fija en error frente a fija sin marcar.
+    expect(await isUnderlined(0, 0, page)).toBe(true);
+    expect(await isUnderlined(8, 8, page)).toBe(false);
+  });
+});

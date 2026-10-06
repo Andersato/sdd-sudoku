@@ -46,6 +46,24 @@ describe("nextSelection", () => {
   });
 });
 
+const REFERENCE_SOLUTION = [
+  [5, 3, 4, 6, 7, 8, 9, 1, 2],
+  [6, 7, 2, 1, 9, 5, 3, 4, 8],
+  [1, 9, 8, 3, 4, 2, 5, 6, 7],
+  [8, 5, 9, 7, 6, 1, 4, 2, 3],
+  [4, 2, 6, 8, 5, 3, 7, 9, 1],
+  [7, 1, 3, 9, 2, 4, 8, 5, 6],
+  [9, 6, 1, 5, 3, 7, 2, 8, 4],
+  [2, 8, 7, 4, 1, 9, 6, 3, 5],
+  [3, 4, 5, 2, 8, 6, 1, 7, 9],
+];
+
+/** Tablero resuelto en el que (0,2) = 4 lo ha puesto el jugador; el resto es fijo. */
+function solvedBoard() {
+  const puzzle = REFERENCE_SOLUTION.map((row, r) => row.map((v, c) => (r === 0 && c === 2 ? null : v)));
+  return place(createBoardFromPuzzle(puzzle), { row: 0, col: 2 }, 4).board;
+}
+
 function freshBoard() {
   return createBoardFromPuzzle([
     [5, null, null, null, null, null, null, null, null],
@@ -68,6 +86,12 @@ describe("shouldConfirmNewGame", () => {
   it("devuelve true tras colocar un número en una celda editable", () => {
     const { board } = place(freshBoard(), { row: 1, col: 1 }, 7);
     expect(shouldConfirmNewGame(board)).toBe(true);
+  });
+
+  it("devuelve false con la partida completada aunque haya números del jugador", () => {
+    const board = solvedBoard();
+    expect(board[0][2]).toEqual({ value: 4, fixed: false });
+    expect(shouldConfirmNewGame(board)).toBe(false);
   });
 
   it("devuelve false de nuevo tras borrar ese mismo número", () => {
